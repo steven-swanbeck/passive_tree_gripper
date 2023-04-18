@@ -3,6 +3,7 @@
 
 // Define FSR pin:
 #define fsrpin A0
+#define swpin 2
 
 //Define variable to store sensor readings:
 int fsrreading; //Variable to store FSR value
@@ -12,6 +13,14 @@ const int stepsPerRevolution = 200;
 
 // Initialize the stepper library on pins 8 through 11:
 Stepper myStepper = Stepper(stepsPerRevolution, 8, 9, 10, 11);
+
+// Button stuffs
+bool bOld {1};
+bool bNew {};
+bool led {};
+unsigned long time = 0;
+unsigned long debounce = 20;
+
 
 //-------------------------------------------------------------
 // Settings
@@ -24,7 +33,10 @@ int min_step_size {5};
 int max_step_size {200};
 //-------------------------------------------------------------
 
+
+
 // Function prototypes
+bool monitorButton ();
 float readForce ();
 int calculateStep (float current_force);
 
@@ -36,22 +48,45 @@ void setup () {
 
   // Set the motor speed (RPMs):
   myStepper.setSpeed(250);
+
+  // Button
+  pinMode(swpin, INPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
 }
-
-
 
 void loop () {
-  // Read the FSR pin and store the output as fsrreading:
-  float current_force = readForce();
+  bool grasp_mode = monitorButton();
 
-  // Calculate and enact update
-  int step_size = calculateStep(current_force);
-  myStepper.step(step_size);
-  
-  delay(50); //Delay 500 ms.
+  Serial.print(grasp_mode);
+
+  if (grasp_mode == true) {
+    float current_force = readForce();
+
+    // Calculate and enact update
+    int step_size = calculateStep(current_force);
+    myStepper.step(step_size);
+    delay(10);
+  } else {
+    delay(50);
+  }
 }
 
 
+
+bool monitorButton ()
+{
+  bNew = digitalRead(swpin);
+  if (bNew == HIGH && bOld == LOW && millis() - time > debounce)
+  {
+    led = !led;
+
+    time = millis();
+  }
+  digitalWrite(LED_BUILTIN, led);
+  bOld = bNew;
+
+  return led;
+}
 
 float readForce ()
 {
@@ -65,8 +100,6 @@ float readForce ()
 
   return current_force;
 }
-
-
 
 int calculateStep (float current_force)
 {
