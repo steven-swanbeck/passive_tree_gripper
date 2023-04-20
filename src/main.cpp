@@ -12,7 +12,7 @@ int fsrreading; //Variable to store FSR value
 const int stepsPerRevolution = 200;
 
 // Initialize the stepper library on pins 8 through 11:
-Stepper myStepper = Stepper(stepsPerRevolution, 8, 9, 10, 11);
+Stepper myStepper = Stepper(stepsPerRevolution, 3, 4, 5, 6);
 
 // Button stuffs
 bool bOld {1};
@@ -20,7 +20,6 @@ bool bNew {};
 bool led {};
 unsigned long time = 0;
 unsigned long debounce = 20;
-
 
 //-------------------------------------------------------------
 // Settings
@@ -55,7 +54,8 @@ void setup () {
 }
 
 void loop () {
-  bool grasp_mode = monitorButton();
+  // bool grasp_mode = monitorButton();
+  bool grasp_mode = true;
 
   Serial.print(grasp_mode);
 
