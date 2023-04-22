@@ -7,8 +7,8 @@
 #define potpin1 A2
 #define potpin2 A3
 
-int potMax {};
-int potMin {};
+int potMax {660};
+int potMin {0};
 
 // Define number of steps per revolution:
 const int stepsPerRevolution = 200;
@@ -22,6 +22,7 @@ int target_force {12}; // N
 float conversion_factor {0.02}; // N/bit(/8)
 int prop_gain {1};
 float tolerance_window {0.15};
+float pot_tol {.4};
 
 int min_step_size {5};
 int max_step_size {200};
@@ -45,14 +46,15 @@ void setup () {
   Serial.begin(9600);
 
   // Set the motor speed (RPMs):
-  myStepper.setSpeed(200);
+  myStepper.setSpeed(100);
 }
 
 void loop () {
   // Check button to determine whether should be using remote control or autonomous
   bool activeFeedback {setControlMode()};
 
-  int targetSpeed {adjustSpeed()};
+  // int targetSpeed {adjustSpeed()};
+  // myStepper.setSpeed(targetSpeed);
 
   if (activeFeedback == true) {
     // read in force
@@ -66,37 +68,41 @@ void loop () {
 
   } else {
     // int step_size = potentiometerControl();
-    int direction {adjustDirection()};
-    myStepper.step(direction * 10);
+    signed int direction {adjustDirection()};
+    // Serial.println(direction*100);
+    myStepper.step(direction * 200);
   }
 
-  delay(50);
+  delay(10);
+  // myStepper.step(50);
+  // delay(10);
 }
 
 //-------------------------------------------------------------
 int adjustSpeed () {
   int potVal = analogRead(potpin2);
-  int speed = int(map(potVal, potMin, potMax, 1, speedMax));
-  myStepper.setSpeed(speed);
+  int speed = (map(potVal, potMin, potMax, 1, speedMax));
   return speed;
 }
 
 int adjustDirection () {
-  int potVal = analogRead(potpin1);
+  int potVal = analogRead(potpin2);
   int potMed {((potMin + potMax) / 2)};
-  if (potVal > potMed && potVal > (1 + tolerance_window) * potMed) {
+  Serial.println();
+  if (potVal > potMed && potVal > (1 + pot_tol) * potMed) {
     return 1;
-  } else if ((potVal < potMed && potVal < (1 - tolerance_window) * potMed)) {
+  } else if ((potVal < potMed && potVal < (1 - pot_tol) * potMed)) {
     return -1;
   } else {
     return 0;
   }
+  
 }
 
 // todo Caleb
 bool setControlMode ()
 {
-  bool state {};
+  bool state {true};
   return state;
 }
 
