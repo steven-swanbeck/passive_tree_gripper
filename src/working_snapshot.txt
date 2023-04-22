@@ -7,9 +7,6 @@
 #define potpin1 A2
 #define potpin2 A3
 
-const int dirPin = 2;
-const int stepPin = 3;
-
 int potMax {660};
 int potMin {0};
 
@@ -93,20 +90,6 @@ void loop () {
 }
 
 //-------------------------------------------------------------
-void stepMotor(bool dir, int steps)
-{
-  digitalWrite(dirPin, HIGH);
-
-	// Spin motor slowly
-	for(int x = 0; x < steps; x++)
-	{
-		digitalWrite(stepPin, dir);
-		delayMicroseconds(2000);
-		digitalWrite(stepPin, !dir);
-		delayMicroseconds(2000);
-	}
-}
-
 int adjustSpeed () {
   int potVal = analogRead(potpin2);
   int speed = (map(potVal, potMin, potMax, 1, speedMax));
