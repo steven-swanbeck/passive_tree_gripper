@@ -46,11 +46,11 @@ bool dir {};
 
 //-------------------------------------------------------------
 // Function prototypes
-bool setControlMode (); // todo Caleb
-int adjustSpeed (); // todo Jared
+bool setControlMode ();
+int adjustSpeed ();
 float readForce ();
-int calculateStep (float current_force); // todo include derivative control
-int potentiometerControl (); // todo Steven
+int calculateStep (float current_force);
+int potentiometerControl ();
 int adjustDirection ();
 void stepMotor (int steps);
 
@@ -67,24 +67,27 @@ void setup () {
 }
 
 void loop () {
-  // Check button to determine whether should be using remote control or autonomous
+  // - Check button to determine whether should be using remote control or autonomous
   bool activeFeedback {setControlMode()};
 
+  // * If closed-loop control should be active
   if (activeFeedback == true) {
-    // read in force
+    // - read in force
     float current_force {readForce()};
 
-    // use it to determine proportional update
+    // - use it to determine update in motor step
     int step_size {calculateStep(current_force)};
 
-    // execute update
+    // - execute update
     stepMotor(step_size);
-    Serial.println(step_size);
 
+  // * If remote control should be active
   } else {
+    // - determine direction from user control
     signed int direction {adjustDirection()};
+
+    // - execute update
     stepMotor(direction * 10);
-    Serial.println(direction * 10);
   }
 
   delay(10);
@@ -130,7 +133,6 @@ int adjustDirection () {
   
 }
 
-// todo Caleb
 bool setControlMode ()
 {
   buttonNew=digitalRead(buttonPin);
@@ -151,16 +153,6 @@ bool setControlMode ()
   return LEDState;
 }
 
-// todo Steven
-int potentiometerControl (int min_turns, int max_turns)
-{
-  int target = analogRead(potpin1);
-  // Serial.println(target);
-  float set_turns = map(target, 0, 1023, min_turns, max_turns);
-  return set_turns;
-}
-
-// - DONE
 float readForce ()
 {
   int fsrreading1 = analogRead(fsrpin1);
@@ -173,7 +165,6 @@ float readForce ()
   return current_force;
 }
 
- // todo ADD DERIVATIVE CONTROL!
 int calculateStep (float current_force)
 {
   int step_size {};
