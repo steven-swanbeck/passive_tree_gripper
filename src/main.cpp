@@ -19,7 +19,7 @@ int LEDPinRed=8;
 int buttonPin=12;
 int buttonNew;
 int buttonOld=1;
-int dt=100;
+int dt=20;
 
 // Define number of steps per revolution:
 const int stepsPerRevolution = 200;
@@ -32,8 +32,8 @@ Stepper myStepper = Stepper(stepsPerRevolution, 3, 4, 5, 6);
 int target_force {12}; // N
 float conversion_factor {0.02}; // N/bit(/8)
 int prop_gain {1};
-float tolerance_window {0.15};
-float pot_tol {.4};
+float tolerance_window {0.3};
+float pot_tol {0.8};
 
 int min_step_size {5};
 int max_step_size {200};
@@ -41,6 +41,8 @@ int speedMax {250};
 
 bool activeFeedback {0};
 signed long currentRotation {0};
+
+bool dir {};
 
 //-------------------------------------------------------------
 // Function prototypes
@@ -50,27 +52,23 @@ float readForce ();
 int calculateStep (float current_force); // todo include derivative control
 int potentiometerControl (); // todo Steven
 int adjustDirection ();
+void stepMotor (int steps);
 
 //-------------------------------------------------------------
 void setup () {
-  // Begin serial communication at a baud rate of 9600:
-  // Serial.begin(9600);
   pinMode(LEDPinBlue, OUTPUT);
   pinMode(LEDPinRed, OUTPUT);
   pinMode(buttonPin, INPUT);
 
-  // Set the motor speed (RPMs):
-  myStepper.setSpeed(100);
+  pinMode(stepPin, OUTPUT);
+	pinMode(dirPin, OUTPUT);
+
+  Serial.begin(9600);
 }
 
 void loop () {
   // Check button to determine whether should be using remote control or autonomous
   bool activeFeedback {setControlMode()};
-
-  // Serial.println(activeFeedback);
-
-  int targetSpeed {adjustSpeed()};
-  myStepper.setSpeed(targetSpeed);
 
   if (activeFeedback == true) {
     // read in force
@@ -80,31 +78,36 @@ void loop () {
     int step_size {calculateStep(current_force)};
 
     // execute update
-    myStepper.step(step_size);
+    stepMotor(step_size);
+    Serial.println(step_size);
 
   } else {
-    // int step_size = potentiometerControl();
     signed int direction {adjustDirection()};
-    // Serial.println(direction*100);
-    myStepper.step(direction * 200);
+    stepMotor(direction * 10);
+    Serial.println(direction * 10);
   }
 
   delay(10);
 }
 
 //-------------------------------------------------------------
-void stepMotor(bool dir, int steps)
+void stepMotor(int steps)
 {
-  digitalWrite(dirPin, HIGH);
-
-	// Spin motor slowly
-	for(int x = 0; x < steps; x++)
-	{
-		digitalWrite(stepPin, dir);
-		delayMicroseconds(2000);
-		digitalWrite(stepPin, !dir);
-		delayMicroseconds(2000);
-	}
+  Serial.println(steps);
+  if (steps > 0) {
+    digitalWrite(dirPin, HIGH);
+  } else if (steps < 0) {
+    digitalWrite(dirPin, LOW);
+  }
+  if (steps != 0) {
+    for(int x = 0; x < stepsPerRevolution; x++)
+    {
+      digitalWrite(stepPin, LOW);
+      delayMicroseconds(2000);
+      digitalWrite(stepPin, HIGH);
+      delayMicroseconds(2000);
+    }
+  }
 }
 
 int adjustSpeed () {
@@ -144,6 +147,7 @@ bool setControlMode ()
     }
   }
   buttonOld=buttonNew;
+  delay(dt);
   return LEDState;
 }
 
