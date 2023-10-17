@@ -2,7 +2,7 @@
 Associated with ME 380R Robot Mechanism Design at UT Austin
 ---
 
-Grasping mechanism to allow a drone to passively hang under a tree branch.
+Grasping mechanism to allow a drone to passively hang under a tree branch inspired by the passive hanging abilities of bats.
 
 <p align="middle">
   <img src="/figures/gripper_in_tree.png" width="500" /> 
